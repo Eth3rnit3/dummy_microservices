@@ -9,8 +9,11 @@ RUN apk add --no-cache build-base
 COPY Gemfile* /app/
 RUN bundle install
 
+# Create data directory
+RUN mkdir -p /app/data
+
 # Copy application code
 COPY . /app/
 
 # Command to run
-CMD ["ruby", "api/messages-api.rb", "-o", "0.0.0.0"]
+CMD ["ruby", "consumers/operations-consumer.rb"]

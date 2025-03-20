@@ -11,7 +11,7 @@ module BunnyHelpers
   end
 
   def queue
-    @queue ||= channel.queue('operations.messages', durable: true)
+    @queue ||= channel.queue('operations', durable: true)
   end
 
   def exchange
@@ -24,9 +24,7 @@ module BunnyHelpers
       routing_key: queue.name,
       persistent: true
     )
-    puts "Published message: #{message}"
 
-    # Close connection
     connection.close
   end
 end

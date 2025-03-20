@@ -8,8 +8,8 @@ include BunnyHelpers
 set :port, 3000
 set :bind, '0.0.0.0'
 
-# API endpoint for messages
-post '/api/messages' do
+# API endpoint for operations
+post '/api/operations' do
   content_type :json
   
   message, email = parse_response(request)

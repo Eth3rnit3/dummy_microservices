@@ -15,11 +15,11 @@ services:
       timeout: 5s
       retries: 5
 
-  messages-api:
+  operations-api:
     build:
       context: .
-      dockerfile: ./docker/messages-api.Dockerfile
-    container_name: messages-api
+      dockerfile: ./docker/operations-api.Dockerfile
+    container_name: operations-api
     ports:
       - "3000:3000"
     depends_on:
@@ -45,11 +45,11 @@ services:
     volumes:
       - ./api:/app/api
 
-  messages-consumer:
+  operations-consumer:
     build:
       context: .
-      dockerfile: ./docker/messages-consumer.Dockerfile
-    container_name: messages-consumer
+      dockerfile: ./docker/operations-consumer.Dockerfile
+    container_name: operations-consumer
     depends_on:
       rabbitmq:
         condition: service_healthy
