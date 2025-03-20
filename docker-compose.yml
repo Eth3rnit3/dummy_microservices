@@ -1,0 +1,66 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # RabbitMQ main port
+      - "15672:15672"  # RabbitMQ management UI
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  messages-api:
+    build:
+      context: .
+      dockerfile: ./docker/messages-api.Dockerfile
+    container_name: messages-api
+    ports:
+      - "3000:3000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    volumes:
+      - ./api:/app/api
+
+  notifications-api:
+    build:
+      context: .
+      dockerfile: ./docker/notifications-api.Dockerfile
+    container_name: notifications-api
+    ports:
+      - "3001:3001"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    volumes:
+      - ./api:/app/api
+
+  messages-consumer:
+    build:
+      context: .
+      dockerfile: ./docker/messages-consumer.Dockerfile
+    container_name: messages-consumer
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      notifications-api:
+        condition: service_started
+    networks:
+      - microservices-network
+    volumes:
+      - ./consumers:/app/consumers
+      - ./data:/app/data
+
+networks:
+  microservices-network:
+    driver: bridge
