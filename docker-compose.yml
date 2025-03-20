@@ -1,5 +1,15 @@
 version: '3'
 
+x-ruby-service: &ruby-service-base
+  build:
+    context: .
+    dockerfile: ./Dockerfile
+  depends_on:
+    rabbitmq:
+      condition: service_healthy
+  networks:
+    - microservices-network
+
 services:
   rabbitmq:
     image: rabbitmq:3-management
@@ -16,50 +26,33 @@ services:
       retries: 5
 
   operations-api:
-    build:
-      context: .
-      dockerfile: ./docker/operations-api.Dockerfile
+    <<: *ruby-service-base
     container_name: operations-api
     ports:
       - "3000:3000"
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - microservices-network
     volumes:
       - ./api:/app/api
+    command: ["ruby", "api/operations-api.rb", "-o", "0.0.0.0"]
 
   notifications-api:
-    build:
-      context: .
-      dockerfile: ./docker/notifications-api.Dockerfile
+    <<: *ruby-service-base
     container_name: notifications-api
     ports:
       - "3001:3001"
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - microservices-network
     volumes:
       - ./api:/app/api
+    command: ["ruby", "api/notifications-api.rb", "-o", "0.0.0.0"]
 
   operations-consumer:
-    build:
-      context: .
-      dockerfile: ./docker/operations-consumer.Dockerfile
+    <<: *ruby-service-base
     container_name: operations-consumer
     depends_on:
-      rabbitmq:
-        condition: service_healthy
       notifications-api:
         condition: service_started
-    networks:
-      - microservices-network
     volumes:
       - ./consumers:/app/consumers
       - ./data:/app/data
+    command: ["ruby", "consumers/operations-consumer.rb"]
 
 networks:
   microservices-network:
